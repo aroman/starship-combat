@@ -1,0 +1,14 @@
+{
+  "name": "usb_daemon",
+  "version": "1.0.0",
+  "main": "daemon.js",
+  "license": "UNLICENSED",
+  "author": "Avi Romanoff <avi@romanoff.me>",
+  "private": true,
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "request": "^2.83.0",
+    "request-promise-native": "^1.0.5",
+    "usb-detection": "^1.4.0"
+  }
+}
