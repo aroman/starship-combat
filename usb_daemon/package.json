@@ -1,7 +1,7 @@
 {
   "name": "usb_daemon",
   "version": "1.0.0",
-  "main": "daemon.js",
+  "main": "lib/index.js",
   "license": "UNLICENSED",
   "author": "Avi Romanoff <avi@romanoff.me>",
   "private": true,
@@ -10,5 +10,15 @@
     "request": "^2.83.0",
     "request-promise-native": "^1.0.5",
     "usb-detection": "^1.4.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-flow": "^6.23.0",
+    "flow-bin": "^0.57.3"
+  },
+  "scripts": {
+    "build": "babel src -d lib",
+    "start": "node lib/index.js"
   }
 }

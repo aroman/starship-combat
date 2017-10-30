@@ -1,8 +1,24 @@
-const express = require('express')
-const _ = require('lodash')
+//@flow
+import _ from 'lodash'
+import type { $Request } from 'express';
+import express from 'express'
 const app = express()
 
-app.use(function(req, res, next) {
+type Sequence = Array<Array<'*' | number | null>>
+
+type Port = {
+  wire: ?number,
+  isOnline: boolean,
+}
+
+type Bay = Array<Port>
+
+type Combo = {
+  name: string,
+  sequence: Sequence,
+}
+
+app.use(function(req: $Request, res, next) {
   res.header("Access-Control-Allow-Origin", "*")
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
   next()
@@ -11,17 +27,17 @@ app.use(function(req, res, next) {
 const NUM_BAYS = 2
 const PORTS_PER_BAY = 4
 
-const makeBay = size => Array(size).fill().map((_, i) => ({
+const makeBay = (size : number): Bay => Array(size).fill().map((_, i): Port => ({
 	wire: null,
 	isOnline: true,
 }))
 
-let bays = Array(NUM_BAYS).fill().map(() => makeBay(4))
+let bays: Array<Bay> = Array(NUM_BAYS).fill().map(() => makeBay(4))
 
 // null => no wire present
 // undefined => wildcard
 // n => wire n
-let combos = [
+let combos: Array<Combo> = [
   {
     name: 'REBOOT',
     sequence: [[0,1,null,null],[0,1,null,null]],
@@ -49,13 +65,13 @@ const sequenceMatches = (A, B) => _.zip(_.flatten(A), _.flatten(B)).every(compon
 const baysToSequence = bays => bays.map(bay => bay.map(({wire}) => wire))
 const getCombos = (bays, combos) =>
   combos
-  .filter(({_, sequence}) => sequenceMatches(baysToSequence(bays), sequence))
-  .map(({name, _}) => name)
+  .filter(({sequence}) => sequenceMatches(baysToSequence(bays), sequence))
+  .map(({name}) => name)
 
-const serializeState = bays => ({ bays, combos: getCombos(bays, combos) })
+const serializeState = (bays, combos) => ({ bays, combos: getCombos(bays, combos) })
 const sendStateAsJson = res => res.json(serializeState(bays, combos))
 
-app.get('/connect/wire/:wire/port/:port/bay/:bay', (req, res) => {
+app.get('/connect/wire/:wire/port/:port/bay/:bay', (req: $Request, res) => {
 	const wire = Number(req.params.wire)
 	const bay = Number(req.params.bay)
 	const port = Number(req.params.port)
@@ -64,20 +80,20 @@ app.get('/connect/wire/:wire/port/:port/bay/:bay', (req, res) => {
 	sendStateAsJson(res)
 })
 
-app.get('/disconnect/port/:port/bay/:bay', (req, res) => {
+app.get('/disconnect/port/:port/bay/:bay', (req: $Request, res) => {
 	const bay = Number(req.params.bay)
 	const port = Number(req.params.port)
 	const wire = bays[bay][port].wire
 	if (wire === null) {
 		console.log(`WARNING: no wire is plugged in to ${port} bay ${bay}`)
 	} else {
-		console.log(`disconnected wire ${wire} from port ${port} bay ${bay}`)
+		console.log(`disconnected wire ${String(wire)} from port ${port} bay ${bay}`)
 		bays[bay][port].wire = null
 	}
 	sendStateAsJson(res)
 })
 
-app.get('/state', (req, res) => {
+app.get('/state', (req: $Request, res) => {
 	sendStateAsJson(res)
 })
 

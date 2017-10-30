@@ -1,6 +1,7 @@
-const usbDetect = require('usb-detection')
-const _ = require('lodash')
-const request = require('request-promise-native')
+//@flow
+import usbDetect from 'usb-detection'
+import _ from 'lodash'
+import request from 'request-promise-native'
 
 const SERVER_URL = 'http://localhost:3000'
 const WIRE_DEVICE_VENDOR_ID = 1423
@@ -12,7 +13,7 @@ const bays = [
 ]
 const wires = ['0A94C91D', 'EDDF3AEC', '7397FC5D', undefined]
 
-const serverMethod = path => request.get(`${SERVER_URL}/${path}`).catch(err => console.error(err.message))
+const serverMethod = (path: string) => request.get(`${SERVER_URL}/${path}`).catch((err: Error) => console.error(err.message))
 
 const deviceIsPartOfGame = d => _.flatten(bays).includes(d.locationId) && wires.includes(d.serialNumber)
 
@@ -50,7 +51,7 @@ function main() {
 	console.log('Daemon running 😈')
 	addAlreadyPluggedInDevices()
 	usbDetect.on('add', onDeviceAdded)
-	usbDetect.on('remove', onDeviceRemoved )
+	usbDetect.on('remove', onDeviceRemoved)
 }
 
 main()

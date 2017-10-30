@@ -1,4 +1,5 @@
-import React, { Component } from 'react'
+//@flow
+import * as React from 'react';
 import './App.css'
 
 const WIRE_COLORS = ['black', 'white', 'blue', 'pink']
@@ -20,36 +21,41 @@ const fetchServer = path => {
   }
   return timeout(POLL_TIMEOUT, fetch(`${SERVER_URL}/${path}`))
   .then(response => response.json())
-  .catch(error => {
+  .catch((error: Object) => {
     // alert('Whoops! The game broke. Check the error console.')
     console.error(error)
   })
 }
 
-class Port extends Component {
-
-  render() {
-    const wireColor = (this.props.wire === null) ? 'none' : WIRE_COLORS[this.props.wire]
-    const isOnline = this.props.isOnline
-    return (
-      <div className={`Port Wire-${wireColor}`} onClick={this.props.cycleWire}>
-        <div className="Port-wire-label">{this.props.wire}</div>
-        <div
-          className={`Port-status Port-status-${isOnline ? 'online' : 'offline'}`}
-          onClick={this.props.disconnectWire}
-        />
-      </div>
-    )
-  }
-
+type PortProps = {
+  wire: number,
+  isOnline: boolean,
+  cycleWire: function,
+  disconnectWire: function,
 }
 
-class App extends Component {
+function Port(props: PortProps) {
+  const wireColor = (props.wire === null) ? 'none' : WIRE_COLORS[props.wire]
+  const isOnline = props.isOnline
+  return (
+    <div className={`Port Wire-${wireColor}`} onClick={props.cycleWire}>
+      <div className="Port-wire-label">{props.wire}</div>
+      <div
+        className={`Port-status Port-status-${isOnline ? 'online' : 'offline'}`}
+        onClick={props.disconnectWire}
+      />
+    </div>
+  )
+}
 
-  constructor(props) {
-    super(props)
+type AppState = {
+  bays: Array<Array<{wire: number, isOnline: boolean}>>,
+  combos: Array<string>,
+}
 
-    this.state = {}
+class App extends React.Component<{}, AppState> {
+
+  componentDidMount() {
     this.onPollTimer()
     setInterval(this.onPollTimer.bind(this), POLL_FREQUENCY)
   }
@@ -59,17 +65,17 @@ class App extends Component {
     .then(state => this.setState(state))
   }
 
-  connectWire(wire, port, bay) {
+  connectWire(wire: number, port: number, bay: number) {
     fetchServer(`connect/wire/${wire}/port/${port}/bay/${bay}`)
     .then(state => this.setState(state))
   }
 
-  disconnectWire(port, bay) {
+  disconnectWire(port: number, bay: number) {
     fetchServer(`disconnect/port/${port}/bay/${bay}`)
     .then(state => this.setState(state))
   }
 
-  cycleWire(port, bay) {
+  cycleWire(port: number, bay: number) {
     const numWires = 4
     const currentWire = this.state.bays[bay][port].wire
     if (currentWire === null) {
@@ -90,11 +96,11 @@ class App extends Component {
         <div className="Combos">{this.state.combos}</div>
         <div className="Bays">
           {
-            this.state.bays.map((ports, bayNum) => (
+            this.state.bays.map((ports: Array<any>, bayNum) => (
               <div className="Bay" key={bayNum}>
                 <div className="Bay-name">{`Bay ${bayNum}`}</div>
                 {
-                  ports.map((attrs, portNum) => (
+                  ports.map((attrs: {wire: number, isOnline: boolean}, portNum) => (
                     <Port
                       key={portNum}
                       cycleWire={() => this.cycleWire(portNum, bayNum)}
